@@ -1,0 +1,85 @@
+import dbPool from '../config/database.js';
+
+const getAllUser = async () => {
+  const SQLQuery = 'SELECT * FROM users';
+  const [result] = await dbPool.execute(SQLQuery);
+  return result;
+};
+
+const getUserById = async (id) => {
+  const SQLQuery = `SELECT * FROM users WHERE id_user=${id}`;
+  const [result] = await dbPool.execute(SQLQuery);
+  return result;
+};
+
+const getUserByEmail = async (email) => {
+  const SQLQuery = `SELECT * FROM users WHERE email=${email}`;
+  const [result] = await dbPool.execute(SQLQuery);
+  return result;
+};
+
+const createNewUser = async (body) => {
+  const SQLQuery = `INSERT INTO users(fullname, email,username, password) VALUES(?, ?, ?, ?)`;
+
+  const values = [body.username, body.password];
+
+  const [result] = await dbPool.execute(SQLQuery, values);
+  return result;
+};
+
+const createNewBulkUser = async (body) => {
+  if (!Array.isArray(body)) {
+    throw new Error('Input must be an array');
+  }
+
+  const values = body.map((item) => [item.username, item.password]);
+
+  // single placeholder for bulk insert on nested array
+  const SQLQuery = `INSERT INTO users(fullname, email,username, password) VALUES ?)`;
+
+  const [result] = await dbPool.query(SQLQuery, [values]);
+  return result;
+};
+
+const updateUserAll = async (body, id) => {
+  const SQLQuery = `UPDATE users SET fullname=?, email=?, username=?, password=? WHERE id_user=?`;
+
+  const values = [body.fullname, body.email, body.username, body.password, id];
+
+  const [result] = await dbPool.execute(SQLQuery, values);
+  return result;
+};
+
+const updateUserPartial = async (body, id) => {
+  // get key and value from body
+  const fields = Object.keys(body);
+  const values = Object.values(body);
+
+  // map set query from fields
+  const setQuery = fields.map((field) => `${field} = ?`).join(', ');
+
+  const SQLQuery = `
+    UPDATE users
+    SET ${setQuery}
+    WHERE id_user = ?
+  `;
+
+  const params = [...values, id];
+
+  const [result] = await dbPool.execute(SQLQuery, params);
+  return result;
+};
+
+const deleteAllUser = async () => {
+  const SQLQuery = 'DELETE FROM users';
+  const [result] = await dbPool.execute(SQLQuery);
+  return result;
+};
+
+const deleteUserById = async (id) => {
+  const SQLQuery = `DELETE FROM users WHERE id_user=${id}`;
+  const [result] = await dbPool.execute.apply(SQLQuery);
+  return result;
+};
+
+export const UsersModel = { getAllUser, getUserById, getUserByEmail, createNewUser, createNewBulkUser, updateUserAll, updateUserPartial, deleteAllUser, deleteUserById };
