@@ -1,13 +1,10 @@
 import express from 'express';
 import { UsersController } from '../controller/UsersController.js';
-import { AuthController } from '../controller/AuthController.js';
 
 const router = express.Router();
 
 // Create - Post Users Endpoint (register/login should be public)
-router.post('/register', AuthController.register);
-
-router.post('/login', AuthController.login);
+router.post('/', UsersController.createNewUser);
 
 // Create - Post Bulk Users Endpoint
 router.post('/bulk', UsersController.createNewBulkUser);

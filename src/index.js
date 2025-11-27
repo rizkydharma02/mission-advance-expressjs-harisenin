@@ -12,6 +12,7 @@ import ordersRoute from './routes/OrdersRoute.js';
 import paymentsRoute from './routes/PaymentsRoute.js';
 import packetsRoute from './routes/PacketsRoute.js';
 import usersRoute from './routes/UsersRoute.js';
+import authRoute from './routes/AuthRoute.js';
 // import middleware
 import middlewareLogRequest from './middleware/logRequest.js';
 
@@ -30,6 +31,7 @@ app.use('/orders', ordersRoute);
 app.use('/payments', paymentsRoute);
 app.use('/packets', packetsRoute);
 app.use('/users', usersRoute);
+app.use('/auth', authRoute);
 
 app.use((req, res) => {
   res.status(404).json({

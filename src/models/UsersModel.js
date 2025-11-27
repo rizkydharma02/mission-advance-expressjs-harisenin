@@ -7,21 +7,21 @@ const getAllUser = async () => {
 };
 
 const getUserById = async (id) => {
-  const SQLQuery = `SELECT * FROM users WHERE id_user=${id}`;
-  const [result] = await dbPool.execute(SQLQuery);
+  const SQLQuery = `SELECT * FROM users WHERE id_user = ?`;
+  const [result] = await dbPool.execute(SQLQuery, [id]);
   return result;
 };
 
 const getUserByEmail = async (email) => {
-  const SQLQuery = `SELECT * FROM users WHERE email=${email}`;
-  const [result] = await dbPool.execute(SQLQuery);
+  const SQLQuery = `SELECT * FROM users WHERE email = ?`;
+  const [result] = await dbPool.execute(SQLQuery, [email]);
   return result;
 };
 
 const createNewUser = async (body) => {
-  const SQLQuery = `INSERT INTO users(fullname, email,username, password) VALUES(?, ?, ?, ?)`;
+  const SQLQuery = `INSERT INTO users(fullname, email, username, password) VALUES(?, ?, ?, ?)`;
 
-  const values = [body.username, body.password];
+  const values = [body.fullname, body.email, body.username, body.password];
 
   const [result] = await dbPool.execute(SQLQuery, values);
   return result;
@@ -32,10 +32,10 @@ const createNewBulkUser = async (body) => {
     throw new Error('Input must be an array');
   }
 
-  const values = body.map((item) => [item.username, item.password]);
+  const values = body.map((item) => [item.fullname, item.email, item.username, item.password]);
 
   // single placeholder for bulk insert on nested array
-  const SQLQuery = `INSERT INTO users(fullname, email,username, password) VALUES ?)`;
+  const SQLQuery = `INSERT INTO users(fullname, email, username, password) VALUES ?`;
 
   const [result] = await dbPool.query(SQLQuery, [values]);
   return result;
@@ -77,9 +77,19 @@ const deleteAllUser = async () => {
 };
 
 const deleteUserById = async (id) => {
-  const SQLQuery = `DELETE FROM users WHERE id_user=${id}`;
-  const [result] = await dbPool.execute.apply(SQLQuery);
+  const SQLQuery = `DELETE FROM users WHERE id_user = ?`;
+  const [result] = await dbPool.execute(SQLQuery, [id]);
   return result;
 };
 
-export const UsersModel = { getAllUser, getUserById, getUserByEmail, createNewUser, createNewBulkUser, updateUserAll, updateUserPartial, deleteAllUser, deleteUserById };
+export const UsersModel = {
+  getAllUser,
+  getUserById,
+  getUserByEmail,
+  createNewUser,
+  createNewBulkUser,
+  updateUserAll,
+  updateUserPartial,
+  deleteAllUser,
+  deleteUserById,
+};
