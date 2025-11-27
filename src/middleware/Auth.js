@@ -23,6 +23,7 @@ const Auth = async (req, res, next) => {
     return res.status(401).json({
       message: 'Unauthorized: Invalid token',
       data: null,
+      error: error.message,
     });
   }
 };
