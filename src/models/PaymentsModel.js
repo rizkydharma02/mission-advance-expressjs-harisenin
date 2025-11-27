@@ -23,7 +23,10 @@ const createNewPayment = async (body) => {
 
 const createNewBulkPayment = async (body) => {
   if (!Array.isArray(body)) {
-    throw new Error('Input must be an array');
+    res.status(400).json({
+      message: 'Bad Request: Missing required payment array or using array instead of object',
+      data: null,
+    });
   }
 
   const values = body.map((item) => [item.id_packet, item.payment_price, item.code_voucher, item.payment_method, item.payment_status]);
