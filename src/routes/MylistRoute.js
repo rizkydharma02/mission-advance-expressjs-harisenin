@@ -1,30 +1,31 @@
 import express from 'express';
 import { MylistController } from '../controller/MylistController.js';
+import AuthMiddleware from '../middleware/Auth.js';
 
 const router = express.Router();
 
 // Create - Post Mylist Endpoint
-router.post('/', MylistController.createNewMylist);
+router.post('/', AuthMiddleware, MylistController.createNewMylist);
 
 // Create - Post Bulk Mylist Endpoint
-router.post('/bulk', MylistController.createNewBulkMylist);
+router.post('/bulk', AuthMiddleware, MylistController.createNewBulkMylist);
 
 // Read - Get All Mylist Endpoint
-router.get('/', MylistController.getAllMylist);
+router.get('/', AuthMiddleware, MylistController.getAllMylist);
 
 // Read - Get Mylist By Id Endpoint
-router.get('/:id', MylistController.getMylistById);
+router.get('/:id', AuthMiddleware, MylistController.getMylistById);
 
 // Update - Patch Mylist Endpoint
-router.patch('/:id', MylistController.updateMylistPartial);
+router.patch('/:id', AuthMiddleware, MylistController.updateMylistPartial);
 
 // Update - Put Mylist Endpoint
-router.put('/:id', MylistController.updateMylistAll);
+router.put('/:id', AuthMiddleware, MylistController.updateMylistAll);
 
 // Delete - Delete All Mylist Endpoint
-router.delete('/', MylistController.deleteAllMylist);
+router.delete('/', AuthMiddleware, MylistController.deleteAllMylist);
 
 // Delete - Delete Mylist By Id Endpoint
-router.delete('/:id', MylistController.deleteMylistById);
+router.delete('/:id', AuthMiddleware, MylistController.deleteMylistById);
 
 export default router;

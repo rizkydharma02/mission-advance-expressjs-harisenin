@@ -1,30 +1,31 @@
 import express from 'express';
 import { SeriesController } from '../controller/SeriesController.js';
+import AuthMiddleware from '../middleware/Auth.js';
 
 const router = express.Router();
 
 // Create - Post Series Endpoint
-router.post('/', SeriesController.createNewSeries);
+router.post('/', AuthMiddleware, SeriesController.createNewSeries);
 
 // Create - Post Bulk Series Endpoint
-router.post('/bulk', SeriesController.createNewBulkSeries);
+router.post('/bulk', AuthMiddleware, SeriesController.createNewBulkSeries);
 
 // Read - Get All Series Endpoint
-router.get('/', SeriesController.getAllSeries);
+router.get('/', AuthMiddleware, SeriesController.getAllSeries);
 
 // Read - Get Series By Id Endpoint
-router.get('/:id', SeriesController.getSeriesById);
+router.get('/:id', AuthMiddleware, SeriesController.getSeriesById);
 
 // Update - Patch Series Endpoint
-router.patch('/:id', SeriesController.updateSeriesPartial);
+router.patch('/:id', AuthMiddleware, SeriesController.updateSeriesPartial);
 
 // Update - Put Series Endpoint
-router.put('/:id', SeriesController.updateSeriesAll);
+router.put('/:id', AuthMiddleware, SeriesController.updateSeriesAll);
 
 // Delete - Delete All Series Endpoint
-router.delete('/', SeriesController.deleteAllSeries);
+router.delete('/', AuthMiddleware, SeriesController.deleteAllSeries);
 
 // Delete - Delete Series By Id Endpoint
-router.delete('/:id', SeriesController.deleteSeriesById);
+router.delete('/:id', AuthMiddleware, SeriesController.deleteSeriesById);
 
 export default router;

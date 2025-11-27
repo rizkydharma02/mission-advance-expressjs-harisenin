@@ -12,16 +12,16 @@ const register = async (req, res, next) => {
     });
   }
 
-  // Check if email already exists
-  const emailExists = await UsersModel.getUserByEmail(body.email);
-  if (emailExists && emailExists.length > 0) {
-    return res.status(400).json({
-      message: 'Bad Request: Email already exists',
-      data: null,
-    });
-  }
-
   try {
+    // Check if email already exists
+    const emailExists = await UsersModel.getUserByEmail(body.email);
+    if (emailExists && emailExists.length > 0) {
+      return res.status(400).json({
+        message: 'Bad Request: Email already exists',
+        data: null,
+      });
+    }
+
     // Hash password
     const passwordHash = await bcryptjs.hash(body.password, 10);
 
@@ -33,10 +33,10 @@ const register = async (req, res, next) => {
       password: passwordHash,
     };
 
-    const users = await UsersModel.createNewUser(userData);
+    const user = await UsersModel.createNewUser(userData);
 
     const payload = {
-      id: users.insertId, // Use the insertId from database
+      id: user.insertId,
       fullname: body.fullname,
       email: body.email,
       username: body.username,
@@ -48,11 +48,11 @@ const register = async (req, res, next) => {
     });
 
     res.status(201).json({
-      message: 'Successfully created new user',
+      message: 'Successfully register',
       data: {
         token: tokenRegister,
         user: {
-          id: users.insertId,
+          id: user.insertId,
           fullname: body.fullname,
           email: body.email,
           username: body.username,
@@ -74,19 +74,23 @@ const login = async (req, res, next) => {
     });
   }
 
-  const emailExists = await UsersModel.getUserByEmail(body.email);
-
-  // Check if user exists
-  if (!emailExists || users.length === 0) {
-    return res.status(400).json({
-      message: 'Bad Request: invalid email or password',
-      data: null,
-    });
-  }
-
   try {
+    // Get user by email
+    const users = await UsersModel.getUserByEmail(body.email);
+
+    // Check if user exists
+    if (!users || users.length === 0) {
+      return res.status(400).json({
+        message: 'Bad Request: invalid email or password',
+        data: null,
+      });
+    }
+
+    // Get first user from array
+    const user = users[0];
+
     // Compare password
-    const isPasswordValid = await bcryptjs.compare(body.password, users.password);
+    const isPasswordValid = await bcryptjs.compare(body.password, user.password);
 
     if (!isPasswordValid) {
       return res.status(400).json({
@@ -95,25 +99,17 @@ const login = async (req, res, next) => {
       });
     }
 
-    const userData = {
-      fullname: body.fullname,
-      email: body.email,
-      username: body.username,
-      password: isPasswordValid,
-    };
-
-    const users = await UsersModel.createNewUser(userData);
-
+    // Create payload from existing user data
     const payload = {
-      id: users.id_user,
-      fullname: body.fullname,
-      email: body.email,
-      username: body.username,
+      id: user.id_user,
+      fullname: user.fullname,
+      email: user.email,
+      username: user.username,
     };
 
     // Sign the JWT token when logging in
     const tokenLogin = jwt.sign(payload, process.env.JWT_SECRET_KEY, {
-      expiresIn: '5m',
+      expiresIn: '1d',
     });
 
     res.status(200).json({
@@ -121,10 +117,10 @@ const login = async (req, res, next) => {
       data: {
         token: tokenLogin,
         user: {
-          id: users.insertId,
-          fullname: body.fullname,
-          email: body.email,
-          username: body.username,
+          id: user.id_user,
+          fullname: user.fullname,
+          email: user.email,
+          username: user.username,
         },
       },
     });

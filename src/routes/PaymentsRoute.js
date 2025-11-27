@@ -1,30 +1,31 @@
 import express from 'express';
 import { PaymentsController } from '../controller/PaymentsController.js';
+import AuthMiddleware from '../middleware/Auth.js';
 
 const router = express.Router();
 
 // Create - Post Payments Endpoint
-router.post('/', PaymentsController.createNewPayment);
+router.post('/', AuthMiddleware, PaymentsController.createNewPayment);
 
 // Create - Post Bulk Payments Endpoint
-router.post('/bulk', PaymentsController.createNewBulkPayment);
+router.post('/bulk', AuthMiddleware, PaymentsController.createNewBulkPayment);
 
 // Read - Get All Payments Endpoint
-router.get('/', PaymentsController.getAllPayment);
+router.get('/', AuthMiddleware, PaymentsController.getAllPayment);
 
 // Read - Get Payments By Id Endpoint
-router.get('/:id', PaymentsController.getPaymentById);
+router.get('/:id', AuthMiddleware, PaymentsController.getPaymentById);
 
 // Update - Patch Payments Endpoint
-router.patch('/:id', PaymentsController.updatePaymentPartial);
+router.patch('/:id', AuthMiddleware, PaymentsController.updatePaymentPartial);
 
 // Update - Put Payments Endpoint
-router.put('/:id', PaymentsController.updatePaymentAll);
+router.put('/:id', AuthMiddleware, PaymentsController.updatePaymentAll);
 
 // Delete - Delete All Payments Endpoint
-router.delete('/', PaymentsController.deleteAllPayment);
+router.delete('/', AuthMiddleware, PaymentsController.deleteAllPayment);
 
 // Delete - Delete Payments By Id Endpoint
-router.delete('/:id', PaymentsController.deletePaymentById);
+router.delete('/:id', AuthMiddleware, PaymentsController.deletePaymentById);
 
 export default router;
