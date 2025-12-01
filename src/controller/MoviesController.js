@@ -2,10 +2,43 @@ import { MoviesModel } from '../models/MoviesModel.js';
 
 const getAllMovie = async (req, res) => {
   try {
-    const result = await MoviesModel.getAllMovie();
+    // base query params
+    const queryParams = {};
+
+    // Filter params
+    if (req.query.id_movie) queryParams.id_movie = req.query.id_movie;
+    if (req.query.id_genre) queryParams.id_genre = req.query.id_genre;
+    if (req.query.movie_title) queryParams.movie_title = req.query.movie_title;
+    if (req.query.movie_subtitle) queryParams.movie_subtitle = req.query.movie_subtitle;
+    if (req.query.movie_year) queryParams.movie_year = req.query.movie_year;
+    if (req.query.movie_classification) queryParams.movie_classification = req.query.movie_classification;
+    if (req.query.movie_producer) queryParams.movie_producer = req.query.movie_producer;
+    if (req.query.movie_cast) queryParams.movie_cast = req.query.movie_cast;
+    if (req.query.movie_duration) queryParams.movie_duration = req.query.movie_duration;
+    if (req.query.movie_rating) queryParams.movie_rating = req.query.movie_rating;
+    if (req.query.movie_ongoing) queryParams.movie_ongoing = req.query.movie_ongoing;
+
+    // Search params
+    if (req.query.search) queryParams.search = req.query.search;
+    if (req.query.searchBy) queryParams.searchBy = req.query.searchBy;
+
+    // Sort params
+    if (req.query.sortBy) queryParams.sortBy = req.query.sortBy;
+    if (req.query.sortOrder) queryParams.sortOrder = req.query.sortOrder;
+
+    // Pagination params
+    if (req.query.page) queryParams.page = req.query.page;
+    if (req.query.limit) queryParams.limit = req.query.limit;
+
+    console.log('Controller - Received query params:', req.query);
+    console.log('Controller - Processed query params:', queryParams);
+
+    const result = await MoviesModel.getAllMovie(queryParams);
+
     res.status(200).json({
       message: 'Successfully get all movies',
       data: result,
+      params: queryParams,
     });
   } catch (error) {
     res.status(500).json({

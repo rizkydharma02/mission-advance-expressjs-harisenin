@@ -3,6 +3,7 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 dotenv.config();
+
 // import routes
 import moviesRoute from './routes/MoviesRoute.js';
 import seriesRoute from './routes/SeriesRoute.js';
@@ -13,8 +14,13 @@ import paymentsRoute from './routes/PaymentsRoute.js';
 import packetsRoute from './routes/PacketsRoute.js';
 import usersRoute from './routes/UsersRoute.js';
 import authRoute from './routes/AuthRoute.js';
+
 // import middleware
 import middlewareLogRequest from './middleware/logRequest.js';
+import AuthMiddleware from './middleware/Auth.js';
+
+// import upload multer
+import upload from './middleware/Multer.js';
 
 const PORT = process.env.PORT || 4000;
 
@@ -32,6 +38,12 @@ app.use('/payments', paymentsRoute);
 app.use('/packets', packetsRoute);
 app.use('/users', usersRoute);
 app.use('/auth', authRoute);
+app.post('/upload', AuthMiddleware, upload.single('file'), (req, res) => {
+  res.status(200).json({
+    message: 'File uploaded successfully',
+    data: req.file,
+  });
+});
 
 app.use((req, res) => {
   res.status(404).json({

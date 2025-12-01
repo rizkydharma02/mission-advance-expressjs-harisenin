@@ -1,14 +1,69 @@
 import dbPool from '../config/database.js';
 
-const getAllMovie = async () => {
-  const SQLQuery = 'SELECT * FROM movies';
-  const [result] = await dbPool.execute(SQLQuery);
+const getAllMovie = async (queryParams = {}) => {
+  let SQLQuery = 'SELECT * FROM movies';
+  const conditions = [];
+  const values = [];
+
+  const filterFields = ['id_movie', 'id_genre', 'movie_title', 'movie_subtitle', 'movie_year', 'movie_classification', 'movie_producer', 'movie_cast', 'movie_duration', 'movie_rating', 'movie_ongoing'];
+
+  const numericFields = ['id_movie', 'id_genre'];
+
+  filterFields.forEach((field) => {
+    if (queryParams[field] !== undefined && queryParams[field] !== null && queryParams[field] !== '') {
+      conditions.push(`${field} = ?`);
+
+      // Konversi ke number jika field adalah numeric
+      if (numericFields.includes(field)) {
+        values.push(Number(queryParams[field]));
+      } else {
+        values.push(queryParams[field]);
+      }
+    }
+  });
+
+  if (queryParams.search) {
+    const searchFields = queryParams.searchBy ? queryParams.searchBy : ['movie_title', 'movie_subtitle', 'movie_producer', 'movie_cast'];
+
+    const searchConditions = searchFields
+      .map((searchField) => {
+        return `${searchField} LIKE ?`;
+      })
+      .join(' OR ');
+
+    conditions.push(`(${searchConditions})`);
+
+    searchFields.forEach(() => {
+      values.push(`%${queryParams.search}%`);
+    });
+  }
+  if (conditions.length > 0) {
+    SQLQuery += ' WHERE ' + conditions.join(' AND ');
+  }
+
+  if (queryParams.sortBy) {
+    const sortOrder = queryParams.sortOrder?.toUpperCase() === 'DESC' ? 'DESC' : 'ASC';
+    const allowedSortFields = ['id_movie', 'id_genre', 'movie_title', 'movie_year', 'movie_classification', 'movie_producer', 'movie_cast', 'movie_duration', 'movie_rating', 'movie_ongoing', 'added_at'];
+
+    if (allowedSortFields.includes(queryParams.sortBy)) {
+      SQLQuery += ` ORDER BY ${queryParams.sortBy} ${sortOrder}`;
+    }
+  }
+
+  if (queryParams.limit) {
+    const limit = parseInt(queryParams.limit);
+    const page = parseInt(queryParams.page) || 1;
+    const offset = (page - 1) * limit;
+
+    SQLQuery += ` LIMIT ${limit} OFFSET ${offset}`;
+  }
+  const [result] = await dbPool.execute(SQLQuery, values);
   return result;
 };
 
 const getMovieById = async (id) => {
-  const SQLQuery = `SELECT * FROM movies WHERE id_movie=${id}`;
-  const [result] = await dbPool.execute(SQLQuery);
+  const SQLQuery = `SELECT * FROM movies WHERE id_movie= ?`;
+  const [result] = await dbPool.execute(SQLQuery, [id]);
   return result;
 };
 
