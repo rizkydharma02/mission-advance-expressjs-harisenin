@@ -8,8 +8,8 @@ const transporter = nodemailer.createTransport({
   port: process.env.PORT_EMAIL,
   secure: false,
   auth: {
-    user: process.env.EMAIL,
-    pass: process.env.PASSWORD,
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASSWORD,
   },
 });
 
@@ -115,7 +115,7 @@ export const sendVerificationEmail = async (to, token) => {
                 ${token}
               </div>
               
-              <p><strong>Catatan:</strong> Token ini akan kedaluwarsa dalam 5 menit.</p>
+              <p><strong>Catatan:</strong> Token ini akan kedaluwarsa dalam 1 jam.</p>
               
               <p>Jika Anda tidak mendaftar akun ChillStream, abaikan email ini.</p>
             </div>
@@ -129,6 +129,8 @@ export const sendVerificationEmail = async (to, token) => {
     };
     const info = await transporter.sendMail(mailOptions);
     console.log('Email sent: ' + info.response);
+    console.log('✅ Email sent:', info.messageId);
+    console.log('🔗 Preview URL:', nodemailer.getTestMessageUrl(info));
     return info;
   } catch (error) {
     console.error('Error sending email:', error);

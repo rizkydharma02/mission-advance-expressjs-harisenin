@@ -8,7 +8,7 @@ const getUserByVerificationToken = async (token) => {
 };
 
 const verifyUser = async (token) => {
-  const SQLQuery = `UPDATE users SET is_verified = true, verification_token = null WHERE verification_token = ?`;
+  const SQLQuery = `UPDATE users SET is_verified = TRUE, verification_token = NULL WHERE verification_token = ?`;
   const [result] = await dbPool.execute(SQLQuery, [token]);
   return result;
 };
@@ -32,9 +32,9 @@ const getUserByEmail = async (email) => {
 };
 
 const createNewUser = async (body) => {
-  const SQLQuery = `INSERT INTO users(fullname, email, username, password) VALUES(?, ?, ?, ?)`;
+  const SQLQuery = `INSERT INTO users(fullname, email, username, password, verification_token, is_verified) VALUES(?, ?, ?, ?, ?, ?)`;
 
-  const values = [body.fullname, body.email, body.username, body.password];
+  const values = [body.fullname, body.email, body.username, body.password, body.verification_token, body.is_verified];
 
   const [result] = await dbPool.execute(SQLQuery, values);
   return result;
@@ -45,10 +45,10 @@ const createNewBulkUser = async (body) => {
     throw new Error('Input must be an array');
   }
 
-  const values = body.map((item) => [item.fullname, item.email, item.username, item.password]);
+  const values = body.map((item) => [item.fullname, item.email, item.username, item.password, item.verification_token, item.is_verified]);
 
   // single placeholder for bulk insert on nested array
-  const SQLQuery = `INSERT INTO users(fullname, email, username, password) VALUES ?`;
+  const SQLQuery = `INSERT INTO users(fullname, email, username, password, verification_token, is_verified) VALUES ?`;
 
   const [result] = await dbPool.query(SQLQuery, [values]);
   return result;

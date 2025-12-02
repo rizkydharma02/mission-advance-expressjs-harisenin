@@ -37,6 +37,7 @@ const register = async (req, res, next) => {
       username: body.username,
       password: passwordHash,
       verification_token: verificationToken,
+      is_verified: false,
     };
 
     const user = await UsersModel.createNewUser(userData);
@@ -57,7 +58,7 @@ const register = async (req, res, next) => {
 
     // Generate token after user is created
     const tokenRegister = jwt.sign(payload, process.env.JWT_SECRET_KEY, {
-      expiresIn: '5m',
+      expiresIn: '1h',
     });
 
     res.status(201).json({
@@ -88,24 +89,24 @@ const verifyEmail = async (req, res, next) => {
   }
 
   try {
-    // Cari user berdasarkan token
+    // search user by token verification
     const user = await UsersModel.getUserByVerificationToken(token);
 
     if (!user || user.length === 0) {
+      const verifiedUser = await UsersModel.getAllUser();
+      const alreadyVerified = verifiedUser.find((u) => u.is_verified === 1);
+
+      if (alreadyVerified) {
+        return res.status(200).json({
+          message: 'Email already verified',
+          data: {
+            verified: true,
+          },
+        });
+      }
       return res.status(400).json({
         message: 'Invalid Verification Token',
         data: null,
-      });
-    }
-
-    // Cek apakah user sudah terverifikasi sebelumnya
-    if (user[0].is_verified) {
-      return res.status(200).json({
-        message: 'Email already verified',
-        data: {
-          email: user[0].email,
-          verified: true,
-        },
       });
     }
 
@@ -116,6 +117,8 @@ const verifyEmail = async (req, res, next) => {
       message: 'Email Verified Successfully',
       data: {
         email: user[0].email,
+        fullname: user[0].fullname,
+        username: user[0].username,
         verified: true,
       },
     });
