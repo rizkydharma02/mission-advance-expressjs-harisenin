@@ -1,5 +1,18 @@
 import dbPool from '../config/database.js';
 
+const getUserByVerificationToken = async (token) => {
+  const SQLQuery = `SELECT * FROM users WHERE verification_token = ?`;
+
+  const [result] = await dbPool.execute(SQLQuery, [token]);
+  return result;
+};
+
+const verifyUser = async (token) => {
+  const SQLQuery = `UPDATE users SET is_verified = true, verification_token = null WHERE verification_token = ?`;
+  const [result] = await dbPool.execute(SQLQuery, [token]);
+  return result;
+};
+
 const getAllUser = async () => {
   const SQLQuery = 'SELECT * FROM users';
   const [result] = await dbPool.execute(SQLQuery);
@@ -83,6 +96,8 @@ const deleteUserById = async (id) => {
 };
 
 export const UsersModel = {
+  getUserByVerificationToken,
+  verifyUser,
   getAllUser,
   getUserById,
   getUserByEmail,

@@ -1,6 +1,8 @@
 import { UsersModel } from '../models/UsersModel.js';
 import bcryptjs from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import { v4 as uuidv4 } from 'uuid';
+import { sendVerificationEmail } from '../services/SendMail.js';
 
 const register = async (req, res, next) => {
   const { body } = req;
@@ -25,15 +27,26 @@ const register = async (req, res, next) => {
     // Hash password
     const passwordHash = await bcryptjs.hash(body.password, 10);
 
+    // generate uuid for token register
+    const verificationToken = uuidv4();
+
     // Create user with hashed password
     const userData = {
       fullname: body.fullname,
       email: body.email,
       username: body.username,
       password: passwordHash,
+      verification_token: verificationToken,
     };
 
     const user = await UsersModel.createNewUser(userData);
+
+    try {
+      await sendVerificationEmail(body.email, verificationToken);
+      console.log(`Verification email sent to ${body.email}`);
+    } catch (emailError) {
+      console.error('Failed to send verification email:', emailError);
+    }
 
     const payload = {
       id: user.insertId,
@@ -57,6 +70,53 @@ const register = async (req, res, next) => {
           email: body.email,
           username: body.username,
         },
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const verifyEmail = async (req, res, next) => {
+  const { token } = req.query;
+
+  if (!token) {
+    return res.status(400).json({
+      message: 'Bad Request: Token is required',
+      data: null,
+    });
+  }
+
+  try {
+    // Cari user berdasarkan token
+    const user = await UsersModel.getUserByVerificationToken(token);
+
+    if (!user || user.length === 0) {
+      return res.status(400).json({
+        message: 'Invalid Verification Token',
+        data: null,
+      });
+    }
+
+    // Cek apakah user sudah terverifikasi sebelumnya
+    if (user[0].is_verified) {
+      return res.status(200).json({
+        message: 'Email already verified',
+        data: {
+          email: user[0].email,
+          verified: true,
+        },
+      });
+    }
+
+    // Update status verifikasi user
+    await UsersModel.verifyUser(token);
+
+    res.status(200).json({
+      message: 'Email Verified Successfully',
+      data: {
+        email: user[0].email,
+        verified: true,
       },
     });
   } catch (error) {
@@ -122,6 +182,7 @@ const login = async (req, res, next) => {
           email: user.email,
           username: user.username,
         },
+        verification_required: true,
       },
     });
   } catch (error) {
@@ -129,4 +190,4 @@ const login = async (req, res, next) => {
   }
 };
 
-export const AuthController = { register, login };
+export const AuthController = { register, login, verifyEmail };
